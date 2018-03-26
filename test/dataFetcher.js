@@ -173,7 +173,7 @@ describe('Store Metadata Fetcher', () => {
         nock.cleanAll();
         defaultNocks();
 
-        sandbox.stub(dao, 'save').yields(null);
+        sandbox.stub(dao, 'save').resolves(null);
     });
 
     afterEach(() => {
@@ -181,20 +181,16 @@ describe('Store Metadata Fetcher', () => {
     });
 
     describe('books', () => {
-        it('fetches books', (done) => {
-            dataFetcher.fetch((err) => {
-                assert.ifError(err);
-
-                sinon.assert.calledWith(dao.save, sinon.match({
-                    title: 'raw title',
-                    subtitle: 'someone',
-                    kind: 'fiction'
-                }));
-                done();
-            });
+        it('fetches books', async () => {
+            await dataFetcher.fetch();
+            sinon.assert.calledWith(dao.save, sinon.match({
+                title: 'raw title',
+                subtitle: 'someone',
+                kind: 'fiction'
+            }));
         });
 
-        it('yields an error when an API call fails', (done) => {
+        it('yields an error when an API call fails', async () => {
             nock.cleanAll()
             nock(metadataHost)
                 .get('/books')
@@ -202,44 +198,41 @@ describe('Store Metadata Fetcher', () => {
 
             defaultNocks();
 
-            dataFetcher.fetch((err) => {
-                assert.ok(err);
+            try {
+                await dataFetcher.fetch();
+            } catch (err) {
                 assert.equal(err.message, 'Error: 500');
-                sinon.assert.notCalled(dao.save);
-                done();
-            });
+                return sinon.assert.notCalled(dao.save);
+            }
+            assert.fail('expected to throw!');
         });
 
-        it('yields an error when writing to the database fails', (done) => {
+        it('yields an error when writing to the database fails', async () => {
             nock.cleanAll()
-            dao.save.yields(new Error('DB Error!'));
+            dao.save.rejects(new Error('DB Error!'));
 
             defaultNocks();
 
-            dataFetcher.fetch((err) => {
-                assert.ok(err);
-                assert.equal(err.message, 'DB Error!');
-                sinon.assert.callCount(dao.save, 1);
-                done();
-            });
+            try {
+                await dataFetcher.fetch();
+            } catch (err) {
+                return assert.equal(err.message, 'DB Error!');
+            }
+            assert.fail('expected to throw!');
         });
     });
 
     describe('dvds', () => {
-        it('fetches dvds', (done) => {
-            dataFetcher.fetch((err) => {
-                assert.ifError(err);
-
-                sinon.assert.calledWith(dao.save, sinon.match({
-                    title: 'dvd title (2007)',
-                    subtitle: 'some director',
-                    kind: 'film'
-                }));
-                done();
-            });
+        it('fetches dvds', async () => {
+            await dataFetcher.fetch();
+            sinon.assert.calledWith(dao.save, sinon.match({
+                title: 'dvd title (2007)',
+                subtitle: 'some director',
+                kind: 'film'
+            }));
         });
 
-        it('yields an error when an API call fails', (done) => {
+        it('yields an error when an API call fails', async () => {
             nock.cleanAll()
             nock(metadataHost)
                 .get('/dvds')
@@ -247,30 +240,27 @@ describe('Store Metadata Fetcher', () => {
 
             defaultNocks();
 
-            dataFetcher.fetch((err) => {
-                assert.ok(err);
+            try {
+                await dataFetcher.fetch();
+            } catch (err) {
                 assert.equal(err.message, 'Error: 500');
-                sinon.assert.notCalled(dao.save);
-                done();
-            });
+                return sinon.assert.notCalled(dao.save);
+            }
+            assert.fail('expected to throw!');
         });
     });
 
     describe('blurays', () => {
-        it('fetches blueray', (done) => {
-            dataFetcher.fetch((err) => {
-                assert.ifError(err);
-
-                sinon.assert.calledWith(dao.save, sinon.match({
-                    title: 'blue-ray title (2007)',
-                    subtitle: 'some director',
-                    kind: 'film'
-                }));
-                done();
-            });
+        it('fetches blueray', async () => {
+            await dataFetcher.fetch();
+            sinon.assert.calledWith(dao.save, sinon.match({
+                title: 'blue-ray title (2007)',
+                subtitle: 'some director',
+                kind: 'film'
+            }));
         });
 
-        it('yields an error when an API call fails', (done) => {
+        it('yields an error when an API call fails', async () => {
             nock.cleanAll()
             nock(metadataHost)
                 .get('/bluerays')
@@ -278,69 +268,64 @@ describe('Store Metadata Fetcher', () => {
 
             defaultNocks();
 
-            dataFetcher.fetch((err) => {
-                assert.ok(err);
+            try {
+                await dataFetcher.fetch();
+            } catch (err) {
                 assert.equal(err.message, 'Error: 500');
-                sinon.assert.notCalled(dao.save);
-                done();
-            });
+                return sinon.assert.notCalled(dao.save);
+            }
+            assert.fail('expected to throw!');
         });
     });
 
     describe('vinyls', () => {
-        it('fetches vinyls', (done) => {
-            dataFetcher.fetch((err) => {
-                assert.ifError(err);
-
-                sinon.assert.calledWith(dao.save, sinon.match({
-                    title: 'Master of puppets',
-                    subtitle: 'metallica'
-                }));
-                done();
-            });
+        it('fetches vinyls', async () => {
+            await dataFetcher.fetch();
+            sinon.assert.calledWith(dao.save, sinon.match({
+                title: 'Master of puppets',
+                subtitle: 'metallica'
+            }));
         });
 
-        it('yields an error when an API call fails', (done) => {
+        it('yields an error when an API call fails', async () => {
             nock.cleanAll();
             nock(metadataHost)
                 .get('/vinyls')
                 .reply(500);
 
-            dataFetcher.fetch((err) => {
-                assert.ok(err);
-                sinon.assert.notCalled(dao.save);
-                done();
-            });
+            defaultNocks();
+
+            try {
+                await dataFetcher.fetch();
+            } catch (err) {
+                assert.equal(err.message, 'Error: 500');
+                return sinon.assert.notCalled(dao.save);
+            }
+            assert.fail('expected to throw!');
         });
     });
 
     describe('Blacklisting', () => {
-        it('exclude products that are blacklisted', (done) => {
+        it('exclude products that are blacklisted', async () => {
             defaultNocks();
 
-            dataFetcher.fetch((err) => {
-                assert.ifError(err);
+            await dataFetcher.fetch();
 
-                sinon.assert.neverCalledWithMatch(dao.save, sinon.match({
-                    id: '127'
-                }));
-                done();
-            });
+            sinon.assert.neverCalledWithMatch(dao.save, sinon.match({
+                id: '127'
+            }));
         });
     });
 
     describe('Stocks', () => {
-        it('appends stock and price', (done) => {
-            dataFetcher.fetch((err) => {
-                assert.ifError(err);
-                sinon.assert.calledWith(dao.save, sinon.match({
-                    title: 'Master of puppets',
-                    subtitle: 'metallica',
-                    price: 10,
-                    quantity: 1
-                }));
-                done();
-            });
+        it('appends stock and price', async () => {
+            await dataFetcher.fetch();
+            sinon.assert.calledWith(dao.save, sinon.match({
+                title: 'Master of puppets',
+                subtitle: 'metallica',
+                price: 10,
+                quantity: 1
+            }));
         });
     });
 });

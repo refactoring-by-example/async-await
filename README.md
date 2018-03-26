@@ -1,11 +1,11 @@
 # online-store
 
-> A practical example refactoring to use asnyc functions
+> A practical example refactoring to use async functions and the await operator
 
 ## Installation
 
 ```
-git clone https://github.com/refactoring-by-example/using-async-functions
+git clone https://github.com/refactoring-by-example/async-await
 ```
 
 ## Test
