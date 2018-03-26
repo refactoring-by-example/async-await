@@ -1,6 +1,6 @@
 # online-store
 
-> A practical example refactoring to use asnyc functions
+> A practical example refactoring to use async functions and the await operator
 
 ## Installation
 
